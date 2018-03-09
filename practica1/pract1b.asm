@@ -1,9 +1,18 @@
 ;************************************************************************** 
 ; SBM 2015. ESTRUCTURA BÁSICA DE UN PROGRAMA EN ENSAMBLADOR 
+; Andrés Salas Peña y Miguel García Moya
+; Pareja 02 Grupo 2301
 ;************************************************************************** 
 ; DEFINICION DEL SEGMENTO DE DATOS 
 DATOS SEGMENT 
-;-- rellenar con los datos solicitados 
+;; Reservamos 1 byte a contador
+CONTADOR DB ?
+;; Reservamos e inicializamos TOME a CAFE
+TOME DW 0CAFEH
+;; Reservamos 100 bytes a TABLA100
+TABLA100 DB 100 dup (?)
+;; Inicializamos una cadena para ERROR1 reservando memoria
+ERROR1 DB "Atencion: Entrada de datos incorrecta" 
 DATOS ENDS 
 ;************************************************************************** 
 ; DEFINICION DEL SEGMENTO DE PILA 
@@ -32,26 +41,11 @@ MOV SP, 64 ; CARGA EL PUNTERO DE PILA CON EL VALOR MAS ALTO
 ; FIN DE LAS INICIALIZACIONES 
 ; COMIENZO DEL PROGRAMA 
 
-;;INSTRUCCIONES DEL PROGRAMA
-;; Reservamos 1 byte a contador
-CONTADOR DB ?
-;; Reservamos e inicializamos TOME a CAFE
-TOME DW, 0CAFEH
-;; Reservamos 100 bytes a TABLA100
-TABLA100 DB, 100 dup (?)
-;; Inicializamos una cadena para ERROR1 reservando memoria
-ERROR1 DB, "Atencion: Entrada de datos incorrecta"
-
-;; Movemos el sexto caracter de error a TABLA100
-MOV AL, ERROR1[6]
+MOV AL, ERROR1[5]
 MOV TABLA100[63H], AL
 MOV AX, TOME
 MOV WORD PTR TABLA100[23H], AX
-MOV AX, TOME
 MOV CONTADOR, AH
-; MOV TABLA100, ERROR1[0006]
-; MOV TABLA100[23], TOME 
-; MOV CONTADOR, TOME[0001]
 
 ; FIN DEL PROGRAMA 
 MOV AX, 4C00H 

@@ -1,5 +1,7 @@
 ;************************************************************************** 
-; SBM 2015. ESTRUCTURA BÁSICA DE UN PROGRAMA EN ENSAMBLADOR 
+; SBM 2015. ESTRUCTURA BÁSICA DE UN PROGRAMA EN ENSAMBLADOR
+; Andrés Salas Peña y Miguel García Moya
+; Pareja 02 Grupo 2301
 ;************************************************************************** 
 ; DEFINICION DEL SEGMENTO DE DATOS 
 DATOS SEGMENT 
@@ -35,14 +37,14 @@ MOV AX, 15H
 MOV BX, 0BBH
 MOV CX, 3412H
 MOV DX, CX
-MOV AX, 6553H
-MOV DS, AX
-MOV BL, DS:[6H]
-MOV BH, DS:[7H]
+MOV AX, 6563H
+MOV ES, AX
+MOV BL, ES:[6H]
+MOV BH, ES:[7H]
 MOV AX, 5000H
-MOV DS, AX
+MOV ES, AX
 MOV SI, 5H
-MOV [SI], CH
+MOV ES:[SI], CH
 MOV AX, [DI]
 MOV BX, 10[BP]
 ; FIN DEL PROGRAMA 
