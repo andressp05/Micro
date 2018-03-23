@@ -5,14 +5,10 @@
 ;************************************************************************** 
 ; DEFINICION DEL SEGMENTO DE DATOS 
 DATOS SEGMENT 
-;; Reservamos 1 byte a contador
-CONTADOR DB ?
-;; Reservamos e inicializamos TOME a CAFE
-TOME DW 0CAFEH
-;; Reservamos 100 bytes a TABLA100
-TABLA100 DB 100 dup (?)
-;; Inicializamos una cadena para ERROR1 reservando memoria
-ERROR1 DB "Atencion: Entrada de datos incorrecta" 
+	GenerateMatrix db 1,0,0,0,1,1,0,0,1,0,0,1,0,1,0,0,1,0,0,1,1,0,0,0,1,1,1,1
+	palabra db 1,0,1,1
+	result db 7 dup (0)
+	input db "Input: "
 DATOS ENDS 
 ;************************************************************************** 
 ; DEFINICION DEL SEGMENTO DE PILA 
@@ -21,8 +17,7 @@ DB 40H DUP (0) ;ejemplo de inicialización, 64 bytes inicializados a 0
 PILA ENDS 
 ;************************************************************************** 
 ; DEFINICION DEL SEGMENTO EXTRA 
-EXTRA SEGMENT 
-RESULT DW 0,0 ;ejemplo de inicialización. 2 PALABRAS (4 BYTES) 
+EXTRA SEGMENT  
 EXTRA ENDS 
 ;************************************************************************** 
 ; DEFINICION DEL SEGMENTO DE CODIGO 
@@ -40,17 +35,56 @@ MOV ES, AX
 MOV SP, 64 ; CARGA EL PUNTERO DE PILA CON EL VALOR MAS ALTO 
 ; FIN DE LAS INICIALIZACIONES 
 ; COMIENZO DEL PROGRAMA 
-
-MOV AL, ERROR1[5]
-MOV TABLA100[63H], AL
-MOV AX, TOME
-MOV WORD PTR TABLA100[23H], AX
-MOV CONTADOR, AH
+call print
+;MOV ES, DX
+;MOV AX, WORD PTR palabra[0]
+;MOV CX, WORD PTR palabra[2]
+;mov ES:[bx], AX
+;mov ES:[bx]+2, CX
 
 ; FIN DEL PROGRAMA 
 MOV AX, 4C00H 
 INT 21H 
-INICIO ENDP 
+INICIO ENDP
+MULTMOD PROC
+	mov bp, 0     ;indice de columna
+bucle2: mov cx, 0 ;indice de multiplicacion
+bucle1:	
+		;multiplico el indice de multiplicacion por el n de elementos de una fila
+		mov al, 7h
+		mul cl 
+		mov si, ax
+		;obtengo el elemento de la matriz
+		mov AL, GenerateMatrix[si][bp]
+		;multiplico por el elemento de la palabra
+		mov si, cx
+		mov es, dx
+		mul BYTE PTR ES:[BX][SI]+0
+		;añado al resultado en el indice de columna
+		add RESULT[bp], AL
+		;aumento el indice de multiplicacion y comparo con 3
+		inc cx
+		cmp cx, 3h
+		jnz bucle1
+		;calcula el modulo 2
+		mov al, RESULT[bp]
+		mov si, 2h
+		div si
+		mov RESULT[bp], ah
+		;aumento el indice de columna y comparo con 7
+		inc bp
+		cmp bp, 6h
+		jnz bucle2
+MULTMOD ENDP
+PRINT PROC
+
+MOV AX, offset input
+MOV DS, DX
+MOV DX, AX
+MOV AH, 9h
+INT 21h
+
+PRINT ENDP
 ; FIN DEL SEGMENTO DE CODIGO 
 CODE ENDS 
 ; FIN DEL PROGRAMA INDICANDO DONDE COMIENZA LA EJECUCION 

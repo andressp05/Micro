@@ -4,8 +4,10 @@
 ; Pareja 02 Grupo 2301
 ;************************************************************************** 
 ; DEFINICION DEL SEGMENTO DE DATOS 
-DATOS SEGMENT 
-;-- rellenar con los datos solicitados 
+DATOS SEGMENT
+CONTADOR DB 0
+PARCIAL DW ?
+RESULT DB 6 DUP (?) 
 DATOS ENDS 
 ;************************************************************************** 
 ; DEFINICION DEL SEGMENTO DE PILA 
@@ -15,7 +17,6 @@ PILA ENDS
 ;************************************************************************** 
 ; DEFINICION DEL SEGMENTO EXTRA 
 EXTRA SEGMENT 
-RESULT DW 0,0 ;ejemplo de inicialización. 2 PALABRAS (4 BYTES) 
 EXTRA ENDS 
 ;************************************************************************** 
 ; DEFINICION DEL SEGMENTO DE CODIGO 
@@ -33,24 +34,41 @@ MOV ES, AX
 MOV SP, 64 ; CARGA EL PUNTERO DE PILA CON EL VALOR MAS ALTO 
 ; FIN DE LAS INICIALIZACIONES 
 ; COMIENZO DEL PROGRAMA 
-MOV AX, 15H
-MOV BX, 0BBH
-MOV CX, 3412H
-MOV DX, CX
-MOV AX, 6563H
-MOV ES, AX
-MOV BL, ES:[6H]
-MOV BH, ES:[7H]
-MOV AX, 5000H
-MOV ES, AX
-MOV SI, 5H
-MOV ES:[SI], CH
-MOV AX, [DI]
-MOV BX, 10[BP]
-; FIN DEL PROGRAMA 
+mov bx, 1234h
+call printASCII
+MOV DS, DX
+MOV DX, AX
+MOV AH, 9h
+INT 21h
 MOV AX, 4C00H 
-INT 21H 
+INT 21H
+
 INICIO ENDP 
+
+printASCII PROC
+			mov PARCIAL, BX
+			mov cx, 10
+REPETIR:	mov AX, PARCIAL
+			mov DX, 0
+			div cx
+			add DX, 30H
+			push DX ;RESTO 
+			mov PARCIAL,AX;Cociente
+			inc CONTADOR
+			cmp PARCIAL, 0h
+			jnz REPETIR
+			mov bx, 0
+BUCLEPOP:	pop DX
+			mov RESULT[bx], DL
+			inc bx
+			dec CONTADOR
+			jnz BUCLEPOP
+			mov RESULT[bx], '$'
+			mov AX, OFFSET RESULT
+			mov DX, SEG RESULT
+			ret
+printASCII ENDP
+
 ; FIN DEL SEGMENTO DE CODIGO 
 CODE ENDS 
 ; FIN DEL PROGRAMA INDICANDO DONDE COMIENZA LA EJECUCION 
