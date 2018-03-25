@@ -6,9 +6,19 @@
 ; DEFINICION DEL SEGMENTO DE DATOS 
 DATOS SEGMENT 
 	GenerateMatrix db 1,0,0,0,1,1,0,0,1,0,0,1,0,1,0,0,1,0,0,1,1,0,0,0,1,1,1,1
-	palabra db 1,0,1,1
-	result db 7 dup (0)
 	input db "Input: "
+	palabra db 1,0,1,1
+	fin1 db 10,'$'
+	output db "Output: "
+	result db 7 dup (0)
+	fin2 db 10,'$'
+	computation db "Computation:"
+	cabecera db 10,"      | P1 | P2 | D1 | P4 | D2 | D3 | D4"
+	datospalabra db 10," WORD | ?  | ?  | !! | ?  | !! | !! | !!"
+	datosparidad1 db 10, " P1   | !! |    | !! |    | !! |    | !!"
+	datosparidad2 db 10, " P2   |    | !! | !! |    |    | !! | !!"
+	datosparidad4 db 10, " P4   |    |    |    | !! | !! | !! | !!"
+	fin3 db 10,'$'
 DATOS ENDS 
 ;************************************************************************** 
 ; DEFINICION DEL SEGMENTO DE PILA 
@@ -79,10 +89,24 @@ MULTMOD ENDP
 PRINT PROC
 
 MOV AX, offset input
+MOV DX, seg input
 MOV DS, DX
 MOV DX, AX
 MOV AH, 9h
 INT 21h
+MOV AX, offset output
+MOV DX, seg output
+MOV DS, DX
+MOV DX, AX
+MOV AH, 9h
+int 21H
+MOV AX, offset computation
+MOV DX, seg computation
+MOV DS, DX
+MOV DX, AX
+MOV AH, 9h
+int 21H
+ret
 
 PRINT ENDP
 ; FIN DEL SEGMENTO DE CODIGO 
