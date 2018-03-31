@@ -6,11 +6,24 @@
 ; DEFINICION DEL SEGMENTO DE DATOS 
 DATOS SEGMENT 
     MSGINPUT DB "Introduzca numero del 1 al 15: "
-    USERINPUT DW ?
+    USERINPUT DB ?
     FIN DB 10,'$'
-    PARCIAL DW ?
-    RESULT DB 6 dup (?)
-    CONTADOR DB 0
+    PARCIAL DB ?
+	GenerateMatrix db 1,1,1,0,0,0,0,1,0,0,1,1,0,0,0,1,0,1,0,1,0,1,1,0,1,0,0,1
+	inputseg dw ?
+	input db "Input: $"
+	DATO DB 4 dup (0)
+	fin1 db 13,10,'$'
+	output db "Output: $"
+	RESULT DB 7 dup (?)
+    fin2 db 13,10,'$'
+    computation db "Computation: "
+    cabecera db 10,"      | P1 | P2 | D1 | P4 | D2 | D3 | D4"
+    datospalabra db 10," WORD | ?  | ?  | !! | ?  | !! | !! | !!"
+    datosparidad1 db 10, " P1   | !! |    | !! |    | !! |    | !!"
+    datosparidad2 db 10, " P2   |    | !! | !! |    |    | !! | !!"
+    datosparidad4 db 10, " P4   |    |    |    | !! | !! | !! | !!"
+    fin3 db 10,'$'
 DATOS ENDS 
 ;************************************************************************** 
 ; DEFINICION DEL SEGMENTO DE PILA 
@@ -47,40 +60,140 @@ MOV AH,0AH
 MOV DX,OFFSET userinput 
 MOV userinput[0], 6 
 INT 21H
-call Trad
-mov ds, DX
-mov dx, ax
-mov ah, 9h
-int 21h
+mov bx, 0
+cmp userinput[1], 1
+jz uno
+mov bl, userinput[3]
+sub bl, 30h
+mov ah, 0
+mov al, 10
+mov cl, userinput[2]
+sub cx, 30h
+mul cl
+add bx, ax
+jmp seguir
+uno: mov bl, userinput[2]
+	sub bl, 30h
+	
+seguir:
+call obtenerVector
+mov dx, seg dato
+mov bx, offset dato
+call multmod
+call print
+
 MOV AX, 4C00H 
 INT 21H 
 INICIO ENDP
 
-trad PROC
-            mov cx, userinput[1]
-            mov ax, userinput[2]
-            mov bx, 10
-            mov parcial, ax
-REPETIR:    mov AX, parcial
-            sub AX, 30H
-            mov DX, 0
-            div bx
-            push DX ;RESTO 
-            mov parcial,AX;Cociente
-            inc CONTADOR
-            cmp parcial, 0h
-            jnz REPETIR
-            mov bx, 0
-BUCLEPOP:   pop DX
-            mov RESULT[bx], DL
-            inc bx
-            dec CONTADOR
-            jnz BUCLEPOP
-            mov RESULT[bx], '$'
-            mov AX, OFFSET RESULT
-            mov DX, SEG RESULT
-            ret
-trad ENDP
+obtenerVector PROC
+			mov PARCIAL, BL
+			mov cl, 2
+			mov bx, 3
+REPETIR:	mov AL, PARCIAL
+			mov ah, 0
+			div cl
+			mov DATO[bx], AH ;Resto
+			mov PARCIAL,AL ;Cociente
+			DEC BX
+			cmp PARCIAL, 0h
+			jnz REPETIR
+			mov AX, OFFSET DATO
+			mov DX, SEG DATO
+			ret
+obtenerVector ENDP
+
+MULTMOD PROC
+	mov inputseg, dx
+    mov bp, 0     ;indice de columna
+bucle2: mov cx, 0 ;indice de multiplicacion
+bucle1: 
+        ;obtengo el indice del elemento de la matriz
+        mov al, 7h
+        mul cl 
+        mov si, ax
+        ;obtengo el elemento de la matriz
+        mov AL, GenerateMatrix[si][bp]
+        ;multiplico por el elemento de la palabra
+        mov si, cx
+        mov es, dx
+        mul BYTE PTR ES:[BX][SI]+0
+        ;a?ado al resultado en el indice de columna
+        add RESULT[bp], AL
+        ;aumento el indice de multiplicacion y comparo con 3
+        inc cx
+        cmp cx, 4h
+        jnz bucle1
+        ;calcula el modulo 2
+        mov al, RESULT[bp]
+        mov dl, 2h
+        div dl
+		mov dx, inputseg
+        mov RESULT[bp], ah
+        ;aumento el indice de columna y comparo con 7
+        inc bp
+        cmp bp, 7h
+        jnz bucle2
+	mov dx, seg result
+	mov ax, offset result
+	ret
+MULTMOD ENDP
+
+PRINT PROC
+
+MOV AX, offset input
+MOV DX, seg input
+MOV DS, DX
+MOV DX, AX
+MOV AH, 9h
+INT 21h
+
+mov bx, 0
+bucleinput: MOV AL, dato[bx]
+			add AL, 30h
+			mov dato[bx], AL
+			inc bx
+			cmp bx, 4h
+			jnz bucleinput
+;no hace falta poner 13,10,'$' porque ya esta definido en el segmento de datos en fin1
+MOV AX, offset dato
+MOV DX, seg dato
+MOV DS, DX
+MOV DX, AX
+MOV AH, 9h
+INT 21h
+
+MOV AX, offset output
+MOV DX, seg output
+MOV DS, DX
+MOV DX, AX
+MOV AH, 9h
+int 21H
+
+mov bx, 0
+bucleoutput: MOV AL, result[bx]
+			add AL, 30h
+			mov result[bx], AL
+			inc bx
+			cmp bx, 7h
+			jnz bucleoutput
+;no hace falta poner 13,10,'$' porque ya esta definido en el segmento de datos en fin2
+MOV AX, offset result
+MOV DX, seg result
+MOV DS, DX
+MOV DX, AX
+MOV AH, 9h
+INT 21h
+
+MOV AX, offset computation
+MOV DX, seg computation
+MOV DS, DX
+MOV DX, AX
+MOV AH, 9h
+int 21H
+ret
+
+PRINT ENDP
 
 ; FIN DEL SEGMENTO DE CODIGO 
 CODE ENDS 

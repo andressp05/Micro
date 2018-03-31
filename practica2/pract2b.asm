@@ -5,7 +5,7 @@
 ;************************************************************************** 
 ; DEFINICION DEL SEGMENTO DE DATOS 
 DATOS SEGMENT 
-    GenerateMatrix db 1,0,0,0,1,1,0,0,1,0,0,1,0,1,0,0,1,0,0,1,1,0,0,0,1,1,1,1
+	GenerateMatrix db 1,1,1,0,0,0,0,1,0,0,1,1,0,0,0,1,0,1,0,1,0,1,1,0,1,0,0,1
 	inputseg dw ?
     input db "Input: $"
     palabra db 1,0,1,1
@@ -89,7 +89,6 @@ bucle1:
         inc bp
         cmp bp, 7h
         jnz bucle2
-	mov RESULT[bp], '$'
 	mov dx, seg result
 	mov ax, offset result
 	ret
