@@ -1,5 +1,5 @@
 ;************************************************************************** 
-; SBM 2015. ESTRUCTURA B?SICA DE UN PROGRAMA EN ENSAMBLADOR 
+; SBM 2018. ESTRUCTURA B?SICA DE UN PROGRAMA EN ENSAMBLADOR 
 ; Andr?s Salas Pe?a y Miguel Garc?a Moya
 ; Pareja 02 Grupo 2301
 ;************************************************************************** 
@@ -96,6 +96,7 @@ MULTMOD ENDP
 
 PRINT PROC
 
+; imprimo la cadena de input
 MOV AX, offset input
 MOV DX, seg input
 MOV DS, DX
@@ -103,6 +104,7 @@ MOV DX, AX
 MOV AH, 9h
 INT 21h
 
+; imprimo el input
 mov bx, 0
 bucleinput: MOV AL, palabra[bx]
 			add AL, 30h
@@ -118,6 +120,7 @@ MOV DX, AX
 MOV AH, 9h
 INT 21h
 
+; imprimo la cadena de output
 MOV AX, offset output
 MOV DX, seg output
 MOV DS, DX
@@ -125,6 +128,7 @@ MOV DX, AX
 MOV AH, 9h
 int 21H
 
+; imprimo el output
 mov bx, 0
 bucleoutput: MOV AL, result[bx]
 			add AL, 30h
@@ -140,6 +144,7 @@ MOV DX, AX
 MOV AH, 9h
 INT 21h
 
+; imprimo la cadena de computacion
 MOV AX, offset computation
 MOV DX, seg computation
 MOV DS, DX

@@ -1,5 +1,5 @@
 ;************************************************************************** 
-; SBM 2015. ESTRUCTURA B?SICA DE UN PROGRAMA EN ENSAMBLADOR 
+; SBM 2018. ESTRUCTURA B?SICA DE UN PROGRAMA EN ENSAMBLADOR 
 ; Andr?s Salas Pe?a y Miguel Garc?a Moya
 ; Pareja 02 Grupo 2301
 ;************************************************************************** 
@@ -56,27 +56,36 @@ MOV DS, DX
 MOV DX, AX
 MOV AH, 9h
 INT 21h
+
 MOV AH,0AH 
 MOV DX,OFFSET userinput 
-MOV userinput[0], 6 
+MOV userinput[0], 6 ; 6 caracteres maximo
 INT 21H
+
 mov bx, 0
-cmp userinput[1], 1
+cmp userinput[1], 1 ; compruebo si se ha introducido 1 caracter o 2
 jz uno
-mov bl, userinput[3]
+
+;suma la cifra de unidades
+mov bl, userinput[3] 
 sub bl, 30h
+;tomo la cifra de decenas
+mov cl, userinput[2] 
+sub cx, 30h
+;multiplico la cifra de decenas por 10
 mov ah, 0
 mov al, 10
-mov cl, userinput[2]
-sub cx, 30h
 mul cl
+;anyado la cifra de decenas por 10 a la cifra de unidades para obtener el numero total
 add bx, ax
 jmp seguir
+
+; si no hay cifra de decenas la cifra de unidades es la primera
 uno: mov bl, userinput[2]
 	sub bl, 30h
 	
 seguir:
-call obtenerVector
+call obtenerVector ;construye el vector binario a partir del numero obtenido
 mov dx, seg dato
 mov bx, offset dato
 call multmod
@@ -88,8 +97,8 @@ INICIO ENDP
 
 obtenerVector PROC
 			mov PARCIAL, BL
-			mov cl, 2
-			mov bx, 3
+			mov cl, 2  ; Base 2: binario
+			mov bx, 3 ;Asegura que los restos se guarden en orden ascendente de significatividad
 REPETIR:	mov AL, PARCIAL
 			mov ah, 0
 			div cl
@@ -120,7 +129,7 @@ bucle1:
         mul BYTE PTR ES:[BX][SI]+0
         ;a?ado al resultado en el indice de columna
         add RESULT[bp], AL
-        ;aumento el indice de multiplicacion y comparo con 3
+        ;aumento el indice de multiplicacion y comparo si es menor que 4
         inc cx
         cmp cx, 4h
         jnz bucle1
@@ -130,7 +139,7 @@ bucle1:
         div dl
 		mov dx, inputseg
         mov RESULT[bp], ah
-        ;aumento el indice de columna y comparo con 7
+        ;aumento el indice de columna y comparo si es menor que 7
         inc bp
         cmp bp, 7h
         jnz bucle2
@@ -141,6 +150,7 @@ MULTMOD ENDP
 
 PRINT PROC
 
+; imprimo la cadena de input
 MOV AX, offset input
 MOV DX, seg input
 MOV DS, DX
@@ -148,6 +158,7 @@ MOV DX, AX
 MOV AH, 9h
 INT 21h
 
+; imprimo el input
 mov bx, 0
 bucleinput: MOV AL, dato[bx]
 			add AL, 30h
@@ -163,6 +174,7 @@ MOV DX, AX
 MOV AH, 9h
 INT 21h
 
+; imprimo la cadena de output
 MOV AX, offset output
 MOV DX, seg output
 MOV DS, DX
@@ -170,6 +182,7 @@ MOV DX, AX
 MOV AH, 9h
 int 21H
 
+; imprimo el output
 mov bx, 0
 bucleoutput: MOV AL, result[bx]
 			add AL, 30h
@@ -185,6 +198,7 @@ MOV DX, AX
 MOV AH, 9h
 INT 21h
 
+; imprimo la cadena de computacion
 MOV AX, offset computation
 MOV DX, seg computation
 MOV DS, DX

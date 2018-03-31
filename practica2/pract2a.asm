@@ -1,5 +1,5 @@
 ;************************************************************************** 
-; SBM 2015. ESTRUCTURA BÁSICA DE UN PROGRAMA EN ENSAMBLADOR
+; SBM 2018. ESTRUCTURA BÁSICA DE UN PROGRAMA EN ENSAMBLADOR
 ; Andrés Salas Peña y Miguel García Moya
 ; Pareja 02 Grupo 2301
 ;************************************************************************** 
@@ -34,7 +34,7 @@ MOV ES, AX
 MOV SP, 64 ; CARGA EL PUNTERO DE PILA CON EL VALOR MAS ALTO 
 ; FIN DE LAS INICIALIZACIONES 
 ; COMIENZO DEL PROGRAMA 
-mov bx, 1234h
+mov bx, 1234
 call printASCII
 MOV DS, DX
 MOV DX, AX
@@ -47,7 +47,7 @@ INICIO ENDP
 
 printASCII PROC
 			mov PARCIAL, BX
-			mov cx, 10
+			mov cx, 10  ; Base 10: decimal
 REPETIR:	mov AX, PARCIAL
 			mov DX, 0
 			div cx
