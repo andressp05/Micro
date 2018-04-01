@@ -6,11 +6,11 @@
 ; DEFINICION DEL SEGMENTO DE DATOS 
 DATOS SEGMENT 
     MSGINPUT DB "Introduzca numero del 1 al 15: "
-    USERINPUT DB ?
-    FIN DB 10,'$'
+    USERINPUT DB 6 dup (?)
+    FIN DB 13,10,'$'
+	MSGERROR DB "Numero no valido $"
     PARCIAL DB ?
 	GenerateMatrix db 1,1,1,0,0,0,0,1,0,0,1,1,0,0,0,1,0,1,0,1,0,1,1,0,1,0,0,1
-	inputseg dw ?
 	input db "Input: $"
 	DATO DB 4 dup (0)
 	fin1 db 13,10,'$'
@@ -19,10 +19,10 @@ DATOS SEGMENT
     fin2 db 13,10,'$'
     computation db "Computation: "
     cabecera db 10,"      | P1 | P2 | D1 | P4 | D2 | D3 | D4"
-    datospalabra db 10," WORD | ?  | ?  | !! | ?  | !! | !! | !!"
-    datosparidad1 db 10, " P1   | !! |    | !! |    | !! |    | !!"
-    datosparidad2 db 10, " P2   |    | !! | !! |    |    | !! | !!"
-    datosparidad4 db 10, " P4   |    |    |    | !! | !! | !! | !!"
+    datospalabra db 10," WORD | ?  | ?  |  ",1," | ?  |  ",1," |  ",1," |  ",1
+    datosparidad1 db 10, " P1   | ",1,"  |    |  ",1," |    |  ",1," |    |  ",1
+    datosparidad2 db 10, " P2   |    | ",1,"  |  ",1," |    |    |  ",1," |  ",1
+    datosparidad4 db 10, " P4   |    |    |    | ",1,"  |  ",1," |  ",1," |  ",1
     fin3 db 10,'$'
 DATOS ENDS 
 ;************************************************************************** 
@@ -85,6 +85,11 @@ uno: mov bl, userinput[2]
 	sub bl, 30h
 	
 seguir:
+cmp bl, 0
+js erro ;negativo
+cmp bl, 15
+ja erro ;mayor que 15
+
 call obtenerVector ;construye el vector binario a partir del numero obtenido
 mov dx, seg dato
 mov bx, offset dato
@@ -93,6 +98,18 @@ call print
 
 MOV AX, 4C00H 
 INT 21H 
+
+erro:
+MOV AX, offset MSGERROR
+MOV DX, seg MSGERROR
+MOV DS, DX
+MOV DX, AX
+MOV AH, 9h
+INT 21h
+
+MOV AX, 4C00H 
+INT 21H 
+
 INICIO ENDP
 
 obtenerVector PROC
@@ -113,7 +130,7 @@ REPETIR:	mov AL, PARCIAL
 obtenerVector ENDP
 
 MULTMOD PROC
-	mov inputseg, dx
+	mov es, dx
     mov bp, 0     ;indice de columna
 bucle2: mov cx, 0 ;indice de multiplicacion
 bucle1: 
@@ -125,8 +142,7 @@ bucle1:
         mov AL, GenerateMatrix[si][bp]
         ;multiplico por el elemento de la palabra
         mov si, cx
-        mov es, dx
-        mul BYTE PTR ES:[BX][SI]+0
+        mul BYTE PTR ES:[BX][SI]
         ;a?ado al resultado en el indice de columna
         add RESULT[bp], AL
         ;aumento el indice de multiplicacion y comparo si es menor que 4
@@ -137,7 +153,6 @@ bucle1:
         mov al, RESULT[bp]
         mov dl, 2h
         div dl
-		mov dx, inputseg
         mov RESULT[bp], ah
         ;aumento el indice de columna y comparo si es menor que 7
         inc bp
@@ -197,6 +212,75 @@ MOV DS, DX
 MOV DX, AX
 MOV AH, 9h
 INT 21h
+
+;escribimos en las posiciones adecuadas de la matriz de computacion los resultados
+MOV BX, 0
+MOV AL, dato[BX]
+MOV BX, 20
+MOV datospalabra[BX], AL
+MOV BX, 1
+MOV AL, dato[BX]
+MOV BX, 30
+MOV datospalabra[BX], AL
+MOV BX, 2
+MOV AL, dato[BX]
+MOV BX, 35
+MOV datospalabra[BX], AL
+MOV BX, 3
+MOV AL, dato[BX]
+MOV BX, 40
+MOV datospalabra[BX], AL
+
+MOV BX, 0
+MOV AL, result[BX]
+MOV BX, 9
+MOV datosparidad1[BX], AL
+MOV BX, 2
+MOV AL, result[BX]
+MOV BX, 20
+MOV datosparidad1[BX], AL
+MOV BX, 4
+MOV AL, result[BX]
+MOV BX, 30
+MOV datosparidad1[BX], AL
+MOV BX, 6
+MOV AL, result[BX]
+MOV BX, 40
+MOV datosparidad1[BX], AL
+
+MOV BX, 1
+MOV AL, result[BX]
+MOV BX, 14
+MOV datosparidad2[BX], AL
+MOV BX, 2
+MOV AL, result[BX]
+MOV BX, 20
+MOV datosparidad2[BX], AL
+MOV BX, 5
+MOV AL, result[BX]
+MOV BX, 35
+MOV datosparidad2[BX], AL
+MOV BX, 6
+MOV AL, result[BX]
+MOV BX, 40
+MOV datosparidad2[BX], AL
+
+MOV BX, 3
+MOV AL, result[BX]
+MOV BX, 24
+MOV datosparidad4[BX], AL
+MOV BX, 4
+MOV AL, result[BX]
+MOV BX, 30
+MOV datosparidad4[BX], AL
+MOV BX, 5
+MOV AL, result[BX]
+MOV BX, 35
+MOV datosparidad4[BX], AL
+MOV BX, 6
+MOV AL, result[BX]
+MOV BX, 40
+MOV datosparidad4[BX], AL
 
 ; imprimo la cadena de computacion
 MOV AX, offset computation
