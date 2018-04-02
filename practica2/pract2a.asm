@@ -36,34 +36,39 @@ MOV SP, 64 ; CARGA EL PUNTERO DE PILA CON EL VALOR MAS ALTO
 ; COMIENZO DEL PROGRAMA 
 mov bx, 1234
 call printASCII
+;interrupcion imprimir
 MOV DS, DX
 MOV DX, AX
 MOV AH, 9h
 INT 21h
+;fin programa interrupcion
 MOV AX, 4C00H 
 INT 21H
 
 INICIO ENDP 
 
+;impresion ASCII
 printASCII PROC
 			mov PARCIAL, BX
-			mov cx, 10  ; Base 10: decimal
+			mov cx, 10  ;divisor
 REPETIR:	mov AX, PARCIAL
 			mov DX, 0
 			div cx
-			add DX, 30H
-			push DX ;RESTO 
-			mov PARCIAL,AX;Cociente
+			add DX, 30H; se añade 30h para caracter ASCII
+			push DX ;resto div 
+			mov PARCIAL,AX ;cociente div
 			inc CONTADOR
-			cmp PARCIAL, 0h
+			cmp PARCIAL, 0h ;fin divisiones
 			jnz REPETIR
 			mov bx, 0
+;reordenacion sacando de pila los restos y el ultimo cociente 
 BUCLEPOP:	pop DX
 			mov RESULT[bx], DL
 			inc bx
-			dec CONTADOR
+			dec CONTADOR ;condicion de parada
 			jnz BUCLEPOP
-			mov RESULT[bx], '$'
+			mov RESULT[bx], '$'	;caracter fin de cadena
+			;preparacion impresion
 			mov AX, OFFSET RESULT
 			mov DX, SEG RESULT
 			ret

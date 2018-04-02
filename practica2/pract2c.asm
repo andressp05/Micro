@@ -5,7 +5,8 @@
 ;************************************************************************** 
 ; DEFINICION DEL SEGMENTO DE DATOS 
 DATOS SEGMENT 
-    MSGINPUT DB "Introduzca numero del 1 al 15: "
+    ; Datos para impresion con sus fin de cadena adecuados
+    MSGINPUT DB "Introduzca numero del 0 al 15: "
     USERINPUT DB 6 dup (?)
     FIN DB 13,10,'$'
 	MSGERROR DB "Numero no valido $"
@@ -19,6 +20,7 @@ DATOS SEGMENT
 	RESULT DB 7 dup (?)
     fin2 db 13,10,'$'
     computation db "Computation: "
+    ;; Resultados iniciales que se modifican en el proceso print
     cabecera db 10,"      | P1 | P2 | D1 | P4 | D2 | D3 | D4"
     datospalabra db 10," WORD | ?  | ?  |  ",1," | ?  |  ",1," |  ",1," |  ",1
     datosparidad1 db 10, " P1   | ",1,"  |    |  ",1," |    |  ",1," |    |  ",1
@@ -51,6 +53,7 @@ MOV ES, AX
 MOV SP, 64 ; CARGA EL PUNTERO DE PILA CON EL VALOR MAS ALTO 
 ; FIN DE LAS INICIALIZACIONES 
 ; COMIENZO DEL PROGRAMA 
+; impresion para que el usuario sepa que introducir
 MOV AX, offset msginput
 MOV DX, seg msginput
 MOV DS, DX
@@ -58,6 +61,7 @@ MOV DX, AX
 MOV AH, 9h
 INT 21h
 
+;interrupcion para esperar tecleo del usuario
 MOV AH,0AH 
 MOV DX,OFFSET userinput 
 MOV userinput[0], 6 ; 6 caracteres maximo
@@ -75,6 +79,7 @@ jnz nosalir
 cmp userinput[6], 'r'
 jnz nosalir
 
+;interrupcion impresion de que se sale
 MOV AX, offset msgsalir
 MOV DX, seg msgsalir
 MOV DS, DX
@@ -82,9 +87,12 @@ MOV DX, AX
 MOV AH, 9h
 INT 21h
 
+;fin programa salida error tecleado salir
 MOV AX, 4C00H 
 INT 21H 
 
+;si no teclea salir
+;preparacion codigo para conversion decimal a binario
 nosalir:
 mov bx, 0
 cmp userinput[1], 1 ; compruebo si se ha introducido 1 caracter o 2
@@ -92,10 +100,10 @@ jz uno
 
 ;suma la cifra de unidades
 mov bl, userinput[3] 
-sub bl, 30h
+sub bl, 30h; caracter ASCII
 ;tomo la cifra de decenas
 mov cl, userinput[2] 
-sub cx, 30h
+sub cx, 30h ;caracter ASCII
 ;multiplico la cifra de decenas por 10
 mov ah, 0
 mov al, 10
@@ -107,7 +115,8 @@ jmp seguir
 ; si no hay cifra de decenas la cifra de unidades es la primera
 uno: mov bl, userinput[2]
 	sub bl, 30h
-	
+
+;comprobacion errores mayor que 15 o 0
 seguir:
 cmp bl, 0
 js erro ;negativo
@@ -139,9 +148,11 @@ mov bx, 3
 mov result[bx], al ;p3 en posicion 4
 call print
 
+;fin programa salida sin errores
 MOV AX, 4C00H 
 INT 21H 
 
+;impresion mensaje error debido a los numeros
 erro:
 MOV AX, offset MSGERROR
 MOV DX, seg MSGERROR
@@ -150,14 +161,15 @@ MOV DX, AX
 MOV AH, 9h
 INT 21h
 
+;fin programa salida error numero no adecuado
 MOV AX, 4C00H 
 INT 21H 
 
 INICIO ENDP
-
+;se encarga de generar el vector binario adecuado, idea parecida pract2a.asm
 obtenerVector PROC
 			mov PARCIAL, BL
-			mov cl, 2  ; Base 2: binario
+			mov cl, 2  ;Base 2: binario
 			mov bx, 3 ;Asegura que los restos se guarden en orden ascendente de significatividad
 REPETIR:	mov AL, PARCIAL
 			mov ah, 0
@@ -172,11 +184,14 @@ REPETIR:	mov AL, PARCIAL
 			ret
 obtenerVector ENDP
 
+;igual que pract2b.asm
 MULTMOD PROC
 	mov es, dx
     mov bp, 0     ;indice de columna
+;bucle2 recorre columna a columna la matriz y calcula el modulo 2
 bucle2: mov cx, 0 ;indice de multiplicacion
-bucle1: 
+	;bucle1 recorre una columna de la matriz generatriz, lleva la suma de la columna	
+	bucle1: 
         ;obtengo el indice del elemento de la matriz
         mov al, 7h
         mul cl 
@@ -186,11 +201,11 @@ bucle1:
         ;multiplico por el elemento de la palabra
         mov si, cx
         mul BYTE PTR ES:[BX][SI]
-        ;a?ado al resultado en el indice de columna
+        ;anyado el resultado en el indice de columna
         add RESULT[bp], AL
         ;aumento el indice de multiplicacion y comparo si es menor que 4
         inc cx
-        cmp cx, 4h
+        cmp cx, 4h ;condicion parada bucle1
         jnz bucle1
         ;calcula el modulo 2
         mov al, RESULT[bp]
@@ -199,15 +214,16 @@ bucle1:
         mov RESULT[bp], ah
         ;aumento el indice de columna y comparo si es menor que 7
         inc bp
-        cmp bp, 7h
+        cmp bp, 7h ;condicion parada bucle1
         jnz bucle2
+    ;devolucion resultados
 	mov dx, seg result
 	mov ax, offset result
 	ret
 MULTMOD ENDP
 
+;igual que pract2b.asm
 PRINT PROC
-
 ; imprimo la cadena de input
 MOV AX, offset input
 MOV DX, seg input
@@ -335,7 +351,6 @@ int 21H
 ret
 
 PRINT ENDP
-
 ; FIN DEL SEGMENTO DE CODIGO 
 CODE ENDS 
 ; FIN DEL PROGRAMA INDICANDO DONDE COMIENZA LA EJECUCION 

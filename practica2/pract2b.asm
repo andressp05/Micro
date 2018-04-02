@@ -5,7 +5,9 @@
 ;************************************************************************** 
 ; DEFINICION DEL SEGMENTO DE DATOS 
 DATOS SEGMENT 
+	;Matriz generatriz
 	GenerateMatrix db 1,0,0,0,1,1,0,0,1,0,0,1,0,1,0,0,1,0,0,1,1,0,0,0,1,1,1,1
+    ;Datos para impresion con sus fin de cadena adecuados
     input db "Input: $"
     palabra db 1,0,1,1
     fin1 db 13,10,'$'
@@ -13,13 +15,14 @@ DATOS SEGMENT
     result db 7 dup (0)
     fin2 db 13,10,'$'
     computation db "Computation: "
+    ;; Resultados iniciales que se modifican en el proceso print
     cabecera db 10,"      | P1 | P2 | D1 | P4 | D2 | D3 | D4"
     datospalabra db 10," WORD | ?  | ?  |  ",1," | ?  |  ",1," |  ",1," |  ",1
     datosparidad1 db 10, " P1   | ",1,"  |    |  ",1," |    |  ",1," |    |  ",1
     datosparidad2 db 10, " P2   |    | ",1,"  |  ",1," |    |    |  ",1," |  ",1
     datosparidad4 db 10, " P4   |    |    |    | ",1,"  |  ",1," |  ",1," |  ",1
     fin3 db 10,'$'
-DATOS ENDS 
+DATOS ENDS
 ;************************************************************************** 
 ; DEFINICION DEL SEGMENTO DE PILA 
 PILA SEGMENT STACK "STACK" 
@@ -76,25 +79,29 @@ call print
 MOV AX, 4C00H 
 INT 21H 
 INICIO ENDP
+
+;multiplicacion y modulo 2
 MULTMOD PROC
-	mov es, dx
-    mov bp, 0     ;indice de columna
-bucle2: mov cx, 0 ;indice de multiplicacion
-bucle1: 
+mov es, dx
+mov bp, 0     ;indice de columna
+;bucle2 recorre columna a columna la matriz y calcula el modulo 2
+bucle2: mov cx, 0;indice de multiplicacion
+	;bucle1 recorre una columna de la matriz generatriz, lleva la suma de la columna
+	bucle1: 
         ;obtengo el indice del elemento de la matriz
         mov al, 7h
         mul cl 
         mov si, ax
         ;obtengo el elemento de la matriz
-        mov AL, GenerateMatrix[si][bp]
+        mov al, GenerateMatrix[si][bp]
         ;multiplico por el elemento de la palabra
         mov si, cx
         mul BYTE PTR ES:[BX][SI]
-        ;a?ado al resultado en el indice de columna
+        ;anyado el resultado en el indice de columna
         add RESULT[bp], AL
         ;aumento el indice de multiplicacion y comparo con 3
         inc cx
-        cmp cx, 4h
+        cmp cx, 4h; condicion parada bucle1
         jnz bucle1
         ;calcula el modulo 2
         mov al, RESULT[bp]
@@ -103,15 +110,16 @@ bucle1:
         mov RESULT[bp], ah
         ;aumento el indice de columna y comparo con 7
         inc bp
-        cmp bp, 7h
+        cmp bp, 7h ;condicion parada bucle2
         jnz bucle2
+	;devolucion resultados
 	mov dx, seg result
 	mov ax, offset result
 	ret
 MULTMOD ENDP
 
+;parseo impresion
 PRINT PROC
-
 ; imprimo la cadena de input
 MOV AX, offset input
 MOV DX, seg input
