@@ -9,6 +9,7 @@ DATOS SEGMENT
     USERINPUT DB 6 dup (?)
     FIN DB 13,10,'$'
 	MSGERROR DB "Numero no valido $"
+	MSGSALIR DB "Saliendo del programa... $"
     PARCIAL DB ?
 	GenerateMatrix db 1,0,0,0,1,1,0,0,1,0,0,1,0,1,0,0,1,0,0,1,1,0,0,0,1,1,1,1
 	input db "Input: $"
@@ -62,6 +63,29 @@ MOV DX,OFFSET userinput
 MOV userinput[0], 6 ; 6 caracteres maximo
 INT 21H
 
+;si el usuario ha escrito 'salir' sale del programa
+cmp userinput[2], 's'
+jnz nosalir
+cmp userinput[3], 'a'
+jnz nosalir
+cmp userinput[4], 'l'
+jnz nosalir
+cmp userinput[5], 'i'
+jnz nosalir
+cmp userinput[6], 'r'
+jnz nosalir
+
+MOV AX, offset msgsalir
+MOV DX, seg msgsalir
+MOV DS, DX
+MOV DX, AX
+MOV AH, 9h
+INT 21h
+
+MOV AX, 4C00H 
+INT 21H 
+
+nosalir:
 mov bx, 0
 cmp userinput[1], 1 ; compruebo si se ha introducido 1 caracter o 2
 jz uno
@@ -96,21 +120,21 @@ mov bx, offset dato
 call multmod
 ;ponemos los bits de paridad en la posicion correcta
 mov bx, 0
-mov al, result[bx] ;d1 en ax
+mov al, result[bx] ;d1 en al
 mov bx, 2
-xchg result[bx], al ;d1 en posicion 3, d3 en ax
+xchg result[bx], al ;d1 en posicion 3, d3 en al
 mov bx, 5
-xchg result[bx], al ;d3 en posicion 6, p2 en ax
+xchg result[bx], al ;d3 en posicion 6, p2 en al
 mov bx, 1
-xchg result[bx], al ;p2 en posicion 2, d2 en ax
+xchg result[bx], al ;p2 en posicion 2, d2 en al
 mov bx, 4
-xchg result[bx], al ;d2 en posicion 5, p1 en ax
+xchg result[bx], al ;d2 en posicion 5, p1 en al
 mov bx, 0
 mov result[bx], al ;p1 en posicion 1
 mov bx, 3
-mov al, result[bx] ;d4 en ax
+mov al, result[bx] ;d4 en al
 mov bx, 6
-xchg result[bx], al ;d4 en posicion 7, p3 en ax
+xchg result[bx], al ;d4 en posicion 7, p3 en al
 mov bx, 3
 mov result[bx], al ;p3 en posicion 4
 call print
