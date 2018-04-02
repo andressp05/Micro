@@ -10,7 +10,7 @@ DATOS SEGMENT
     FIN DB 13,10,'$'
 	MSGERROR DB "Numero no valido $"
     PARCIAL DB ?
-	GenerateMatrix db 1,1,1,0,0,0,0,1,0,0,1,1,0,0,0,1,0,1,0,1,0,1,1,0,1,0,0,1
+	GenerateMatrix db 1,0,0,0,1,1,0,0,1,0,0,1,0,1,0,0,1,0,0,1,1,0,0,0,1,1,1,1
 	input db "Input: $"
 	DATO DB 4 dup (0)
 	fin1 db 13,10,'$'
@@ -94,6 +94,25 @@ call obtenerVector ;construye el vector binario a partir del numero obtenido
 mov dx, seg dato
 mov bx, offset dato
 call multmod
+;ponemos los bits de paridad en la posicion correcta
+mov bx, 0
+mov al, result[bx] ;d1 en ax
+mov bx, 2
+xchg result[bx], al ;d1 en posicion 3, d3 en ax
+mov bx, 5
+xchg result[bx], al ;d3 en posicion 6, p2 en ax
+mov bx, 1
+xchg result[bx], al ;p2 en posicion 2, d2 en ax
+mov bx, 4
+xchg result[bx], al ;d2 en posicion 5, p1 en ax
+mov bx, 0
+mov result[bx], al ;p1 en posicion 1
+mov bx, 3
+mov al, result[bx] ;d4 en ax
+mov bx, 6
+xchg result[bx], al ;d4 en posicion 7, p3 en ax
+mov bx, 3
+mov result[bx], al ;p3 en posicion 4
 call print
 
 MOV AX, 4C00H 

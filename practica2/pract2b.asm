@@ -5,7 +5,7 @@
 ;************************************************************************** 
 ; DEFINICION DEL SEGMENTO DE DATOS 
 DATOS SEGMENT 
-	GenerateMatrix db 1,1,1,0,0,0,0,1,0,0,1,1,0,0,0,1,0,1,0,1,0,1,1,0,1,0,0,1
+	GenerateMatrix db 1,0,0,0,1,1,0,0,1,0,0,1,0,1,0,0,1,0,0,1,1,0,0,0,1,1,1,1
     input db "Input: $"
     palabra db 1,0,1,1
     fin1 db 13,10,'$'
@@ -51,6 +51,25 @@ MOV CX, WORD PTR palabra[2]
 mov ES:[bx], AX
 mov ES:[bx]+2, CX
 call multmod
+;ponemos los bits de paridad en la posicion correcta
+mov bx, 0
+mov al, result[bx] ;d1 en ax
+mov bx, 2
+xchg result[bx], al ;d1 en posicion 3, d3 en ax
+mov bx, 5
+xchg result[bx], al ;d3 en posicion 6, p2 en ax
+mov bx, 1
+xchg result[bx], al ;p2 en posicion 2, d2 en ax
+mov bx, 4
+xchg result[bx], al ;d2 en posicion 5, p1 en ax
+mov bx, 0
+mov result[bx], al ;p1 en posicion 1
+mov bx, 3
+mov al, result[bx] ;d4 en ax
+mov bx, 6
+xchg result[bx], al ;d4 en posicion 7, p3 en ax
+mov bx, 3
+mov result[bx], al ;p3 en posicion 4
 call print
 
 ; FIN DEL PROGRAMA 
