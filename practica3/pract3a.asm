@@ -1,5 +1,5 @@
 ;************************************************************************** 
-; SBM 2017. ESTRUCTURA BÁSICA DE UN PROGRAMA EN ENSAMBLADOR
+; SBM 2018. ESTRUCTURA BÁSICA DE UN PROGRAMA EN ENSAMBLADOR
 ; Andrés Salas Peña y Miguel García Moya
 ; Pareja 02 Grupo 2301
 ;************************************************************************** 
