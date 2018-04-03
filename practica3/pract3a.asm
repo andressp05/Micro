@@ -37,7 +37,18 @@ MOV SP, 64 ; CARGA EL PUNTERO DE PILA CON EL VALOR MAS ALTO
 ; FIN DEL PROGRAMA 
 MOV AX, 4C00H 
 INT 21H 
-INICIO ENDP 
+INICIO ENDP
+
+; comprobarNumeroSecreto
+_comprobarNumeroSecreto PROC
+
+_comrpobarNumeroSecreto ENDP
+
+; rellenarIntento
+_rellenarIntento PROC
+
+_rellenarIntento ENDP
+
 ; FIN DEL SEGMENTO DE CODIGO 
 PRACT3A ENDS 
 ; FIN DEL PROGRAMA INDICANDO DONDE COMIENZA LA EJECUCION 
