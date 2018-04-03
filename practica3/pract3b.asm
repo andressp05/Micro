@@ -38,6 +38,17 @@ MOV SP, 64 ; CARGA EL PUNTERO DE PILA CON EL VALOR MAS ALTO
 MOV AX, 4C00H 
 INT 21H 
 INICIO ENDP 
+
+; calcularAciertos
+_calcularAciertos PROC
+
+_calcularAciertos ENDP
+
+; calcularSemiAciertos
+_calcularSemiAciertos PROC
+
+_calcularSemiAciertos ENDP
+
 ; FIN DEL SEGMENTO DE CODIGO 
 PRACT3B ENDS 
 ; FIN DEL PROGRAMA INDICANDO DONDE COMIENZA LA EJECUCION 
