@@ -3,53 +3,84 @@
 ; Andrés Salas Peña y Miguel García Moya
 ; Pareja 02 Grupo 2301
 ;************************************************************************** 
-; DEFINICION DEL SEGMENTO DE DATOS 
-DATOS SEGMENT 
-;-- rellenar con los datos solicitados 
-DATOS ENDS 
-;************************************************************************** 
-; DEFINICION DEL SEGMENTO DE PILA 
-PILA SEGMENT STACK "STACK" 
-DB 40H DUP (0) ;ejemplo de inicialización, 64 bytes inicializados a 0 
-PILA ENDS 
-;************************************************************************** 
-; DEFINICION DEL SEGMENTO EXTRA 
-EXTRA SEGMENT 
-RESULT DW 0,0 ;ejemplo de inicialización. 2 PALABRAS (4 BYTES) 
-EXTRA ENDS 
-;************************************************************************** 
-; DEFINICION DEL SEGMENTO DE CODIGO 
+; DEFINICION DEL SEGMENTO DE CODIGO
 PRACT3A SEGMENT BYTE PUBLIC 'CODE'
-ASSUME CS: PRACT3A, DS: DATOS, ES: EXTRA, SS: PILA 
-; COMIENZO DEL PROCEDIMIENTO PRINCIPAL 
-INICIO PROC 
-; INICIALIZA LOS REGISTROS DE SEGMENTO CON SU VALOR
-MOV AX, DATOS 
-MOV DS, AX 
-MOV AX, PILA 
-MOV SS, AX 
-MOV AX, EXTRA 
-MOV ES, AX 
-MOV SP, 64 ; CARGA EL PUNTERO DE PILA CON EL VALOR MAS ALTO 
-; FIN DE LAS INICIALIZACIONES 
-; COMIENZO DEL PROGRAMA 
-
-; FIN DEL PROGRAMA 
-MOV AX, 4C00H 
-INT 21H 
-INICIO ENDP
+ASSUME CS: PRACT3A
 
 ; comprobarNumeroSecreto
-_comprobarNumeroSecreto PROC
+; suponemos que la entrada es un array de cuatro posiciones
+; devuelve 1 si contiene algún dígito repetido, 0 en caso contrario
+PUBLIC _comprobarNumeroSecreto
+_comprobarNumeroSecreto PROC FAR
+	;Proceso Far
+	push bp
+	mov bp, sp
 
-_comrpobarNumeroSecreto ENDP
+	;Sacamos los datos de la pila
+	les bx, [bp + 6]
+
+	;Proceso comprobarNumeroSecreto
+	mov ax, [bx] ;Metemos el primer numero en AX
+	cmp ax, [bx]+1 ;Lo comparamos con el segundo
+	jz REPEATED ;Salta si el primero y el segundo son iguales
+	cmp ax, [bx]+2 ;Mismo proceso
+	jz REPEATED
+	cmp ax, [bx]+3
+	jz REPEATED
+	mov ax, [bx]+1 ;Metemos el segundo numero
+	cmp ax, [bx]+2
+	jz REPEATED
+	cmp ax, [bx]+3
+	jz REPEATED
+	mov ax, [bx]+2 ;Metemos el tercero
+	cmp ax, [bx]+3
+	jz REPEATED
+	mov ax, 0 ;Si llega aquí es que no hay ninguno repetido
+	ret
+
+;Devolver 1
+REPEATED:
+	mov ax, 1
+	ret
+_comprobarNumeroSecreto ENDP
 
 ; rellenarIntento
-_rellenarIntento PROC
+PUBLIC _rellenarIntento
+_rellenarIntento PROC FAR
+	;Proceso Far
+	push bp
+	mov bp, sp
 
+	;Sacamos los datos de la pila
+	les bx, [bp + 8] ;intentoDigitos
+	mov cx, [bp + 6] ;intento
+	mov di, 10; divisor
+	;Proceso sacar dígitos
+REPETIR:	
+	mov AX, CX
+	mov DX, 0
+	div di	
+	push DX ;resto div 
+	mov CX,AX;cociente div
+	inc SI
+	cmp SI, 4h ;fin divisiones
+	jnz REPETIR
+	mov CX, 0
+;reordenacion sacando de pila los restos y el ultimo cociente 
+BUCLEPOP:	
+	pop DX
+	mov [bx][si], DL
+	inc bx
+	dec SI ;condicion de parada
+	jnz BUCLEPOP
+	mov DH, [bx]
+	mov DL, [bx]+1
+	mov AH, [bx]+2
+	mov AH, [bx]+3
+	ret
 _rellenarIntento ENDP
 
 ; FIN DEL SEGMENTO DE CODIGO 
 PRACT3A ENDS 
-; FIN DEL PROGRAMA INDICANDO DONDE COMIENZA LA EJECUCION 
-END INICIO
+; FIN DEL PROGRAMA
+END
