@@ -24,10 +24,15 @@ int main( void )
 	do { 
 		for (i=0; i<4; i++) 
 			numSecreto[i] = rand() % 10; 
-		repetido = comprobarNumeroSecreto(numSecreto); 
-	} while (repetido == TRUE); 
+		repetido = comprobarNumeroSecreto(numSecreto);
+		printf("Numero secreto: %u%u%u%u\n", numSecreto[0], numSecreto[1], numSecreto[2], numSecreto[3]); 
+
+	} while (repetido == TRUE);
 
 	numIntentos = 0; 
+
+	printf("Numero secreto: %u%u%u%u\n", numSecreto[0], numSecreto[1], numSecreto[2], numSecreto[3]); 
+
 
 	do { 
 		numIntentos++; 
