@@ -65,7 +65,7 @@ REPETIR:
 	mov dx, 0
 	div di	
 	push dx ;resto div 
-	mov si,ax;cociente div
+	mov si, ax;cociente div
 	inc cx
 	cmp cx, 4h ;fin divisiones
 	jnz REPETIR
