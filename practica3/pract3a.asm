@@ -15,35 +15,34 @@ _comprobarNumeroSecreto PROC FAR
 	;Proceso Far
 	push bp
 	mov bp, sp
-	push bx
+	push bx si di
 
 	;Sacamos los datos de la pila
 	les bx, [bp + 6]
 
 	;Proceso comprobarNumeroSecreto
-	mov al, es:[bx] ;Metemos el primer numero en AX
-	cmp al, es:[bx]+1 ;Lo comparamos con el segundo
-	jz REPEATED ;Salta si el primero y el segundo son iguales
-	cmp al, es:[bx]+2 ;Mismo proceso
-	jz REPEATED
-	cmp al, es:[bx]+3
-	jz REPEATED
-	mov al, es:[bx]+1 ;Metemos el segundo numero
-	cmp al, es:[bx]+2
-	jz REPEATED
-	cmp al, es:[bx]+3
-	jz REPEATED
-	mov al, es:[bx]+2 ;Metemos el tercero
-	cmp al, es:[bx]+3
-	jz REPEATED
+	mov si, 0 ;Primer contador
+	BUCLE1:
+		mov di, 0 ;Segundo contador
+		mov al, es:[bx][si] ;Digito a comparar con los demas
+		BUCLE2:	
+			cmp si, di ;saltamos la comparacion con el mismo
+			jz saltar
+			cmp al, es:[bx][di] ;Demas digitos
+			jz REPEATED ;repetido
+			saltar:
+			inc di
+			cmp di, 4
+			jnz BUCLE2
+		inc si
+		cmp si, 4
+		jnz BUCLE1
 	mov ax, 0 ;Si llega aquí es que no hay ninguno repetido
-	pop bx bp
-	ret
-
-;Devolver 1
-REPEATED:
-	mov ax, 1
-	pop bx bp
+	jmp FIN
+	REPEATED:
+	mov ax, 1 ;Devuelve 1
+	FIN:
+	pop di si bx bp
 	ret
 _comprobarNumeroSecreto ENDP
 

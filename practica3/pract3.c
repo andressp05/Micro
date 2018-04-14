@@ -20,7 +20,7 @@ int main( void )
 	unsigned int numIntentos, intento, aciertos, semiaciertos, repetido, i; 
 
 	srand((unsigned) time(&t)); 
-
+	
 	do { 
 		for (i=0; i<4; i++) 
 			numSecreto[i] = rand() % 10; 
