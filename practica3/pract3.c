@@ -1,3 +1,9 @@
+/////////////////////////////////////////////////////////////////////////// 
+// SBM 2018. Practica 3 - Fichero 3.c
+// Codigo principal C proporcionado del MasterMind
+// Andres Salas Peña y Miguel Garcia Moya
+// Pareja 02 Grupo 2301
+///////////////////////////////////////////////////////////////////////////
 #include <stdio.h> 
 #include <stdlib.h> 
 #define TRUE 1 

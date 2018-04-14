@@ -1,17 +1,22 @@
 ;************************************************************************** 
-; SBM 2018. ESTRUCTURA BÁSICA DE UN PROGRAMA EN ENSAMBLADOR
-; Andrés Salas Peña y Miguel García Moya
+; SBM 2018. Practica 3 - Fichero 3b
+; Funciones: calcularAciertos y calcularSemiAciertos
+; Andres Salas Peña y Miguel Garcia Moya
 ; Pareja 02 Grupo 2301
 ;************************************************************************** 
 ; DEFINICION DEL SEGMENTO DE CODIGO 
 PRACT3B SEGMENT BYTE PUBLIC 'CODE' 
 ASSUME CS: PRACT3B
+
 ; calcularAciertos
+; devuelve el numero de aciertos del intento
+; un acierto es el mismo numero y misma posicion que el numero secreto
 PUBLIC _calcularAciertos
 _calcularAciertos PROC FAR
 	;Proceso Far
 	push bp 
 	mov bp, sp
+	;Guardamos en la pila los registros que vamos a usar
 	push bx cx si di
 
 	;Sacamos los datos de la pila
@@ -23,25 +28,28 @@ _calcularAciertos PROC FAR
 	BUCLE:
 		mov al, es:[si][bx] ;Digito del numero secreto
 		cmp al, es:[di][bx] ;Digito del intento
-		jnz NO_ACIERTO 
+		jnz NO_ACIERTO ;Comparamos, si no acierta salta
 		inc cx ;incrementamos el contador de aciertos
 		NO_ACIERTO:
-		inc bx
-		cmp bx, 4
+		inc bx ;incrementamos el numero de digitos comparados
+		cmp bx, 4 ;si ya hemos comparado los 4, finaliza el bucle
 		jnz BUCLE
-		
-	mov ax, cx ;Retornamos el numero de Aciertos
-	pop di si cx bx bp
-	ret
-
+	
+	;Retornamos el numero de Aciertos por ax	
+	mov ax, cx 
+	pop di si cx bx bp ;Sacamos todos los datos de la pila usados
+	ret ;Volvemos al codigo principal de c
 _calcularAciertos ENDP
 
 ; calcularSemiAciertos
+; devuelve el numero de semiaciertos del intento
+; un semiacierto es mismo numero pero distinta posicion que el numero secreto
 PUBLIC _calcularSemiaciertos
 _calcularSemiaciertos PROC FAR
 	;Proceso Far
 	push bp 
 	mov bp, sp
+	;Guardamos en la pila los registros que vamos a usar
 	push bx cx si di
 	
 	;Sacamos los datos de la pila
@@ -55,28 +63,28 @@ _calcularSemiaciertos PROC FAR
 		mov al, es:[bx][si] ;Digito a comparar con los demas
 		BUCLE2:	
 			cmp si, bp ;evitamos contar aciertos como semiaciertos
-			jz saltar
-			cmp al, es:[di][bp] ;Demas digitos
-			jz COINCIDENCIA ;detenemos el bucle e incrementamos el contador de semiaciertos
+			jz saltar ;si son el mismo valor, saltamos al siguiente valor de bp
+			cmp al, es:[di][bp] ;Comparacion con los demas digitos
+			jz COINCIDENCIA ;detenemos el bucle e incrementamos los semiaciertos
 			saltar:
-			inc bp
-			cmp bp, 4
+			inc bp ;pasamos a la comparacion con el siguiente digito distinto
+			cmp bp, 4 ;si es cuatro, hemos finalizado con el bucle interno
 			jnz BUCLE2
-			jmp NO_COINCIDENCIA ;acaba el bucle: no incrementamos el contador de semiaciertos
+			jmp NO_COINCIDENCIA ;fin bucle interno sin incrementar semiaciertos
 			
 		COINCIDENCIA:
-		inc cx
+		inc cx ;si hubo coincidencia incrementamos el numero de semiaciertos
 		NO_COINCIDENCIA:
-		inc si
-		cmp si, 4
+		inc si ;comparamos el siguiente digito con los demas
+		cmp si, 4 ;si es 4, hemos finalizado
 		jnz BUCLE1
 		
 	mov ax, cx ;Retornamos el numero de Aciertos
-	pop di si cx bx bp
-	ret
+	pop di si cx bx bp ;sacamos todos los datos de la pila usados
+	ret ;Volvemos al codigo principal de C
 _calcularSemiaciertos ENDP
 
 ; FIN DEL SEGMENTO DE CODIGO 
 PRACT3B ENDS 
-; FIN DEL PROGRAMA INDICANDO DONDE COMIENZA LA EJECUCION 
+; FIN DEL PROGRAMA
 END
