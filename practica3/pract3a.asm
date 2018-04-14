@@ -53,30 +53,31 @@ _rellenarIntento PROC FAR
 	;Proceso Far
 	push bp 
 	mov bp, sp
-	push bx cx di ax dx si
+	push bx cx ax dx si di
 	;Sacamos los datos de la pila
 	les bx, [bp + 8] ;intentoDigitos
-	mov cx, [bp + 6] ;intento
+	mov si, [bp + 6] ;intento
 	mov di, 10; divisor
-	mov si, 0
+	mov cx, 0
 	;Proceso sacar dígitos
 REPETIR:	
-	mov ax, cx
+	mov ax, si
 	mov dx, 0
 	div di	
 	push dx ;resto div 
-	mov cx,ax;cociente div
-	inc si
-	cmp si, 4h ;fin divisiones
+	mov si,ax;cociente div
+	inc cx
+	cmp cx, 4h ;fin divisiones
 	jnz REPETIR
-	dec bx ;como si es 4 esto hace que [bx][si] sea como si SI fuera 3
+	mov si, 0
 ;reordenacion sacando de pila los restos y el ultimo cociente 
 BUCLEPOP:	
 	pop dx
 	mov es:[bx][si], DL
-	dec si ;condicion de parada
+	inc si
+	dec cx ;condicion de parada
 	jnz BUCLEPOP
-	pop si dx ax di cx bx bp
+	pop di si dx ax cx bx bp
 	ret
 _rellenarIntento ENDP
 
