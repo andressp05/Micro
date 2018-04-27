@@ -3,36 +3,30 @@
 ; Andrés Salas Peña y Miguel García Moya
 ; Pareja 02 Grupo 2301
 ;************************************************************************** 
-; DEFINICION DEL SEGMENTO DE DATOS 
-DATOS SEGMENT 
-;-- rellenar con los datos solicitados 
-DATOS ENDS 
-;************************************************************************** 
-; DEFINICION DEL SEGMENTO DE PILA 
-PILA SEGMENT STACK "STACK" 
-DB 40H DUP (0) ;ejemplo de inicialización, 64 bytes inicializados a 0 
-PILA ENDS 
-;************************************************************************** 
-; DEFINICION DEL SEGMENTO EXTRA 
-EXTRA SEGMENT 
-RESULT DW 0,0 ;ejemplo de inicialización. 2 PALABRAS (4 BYTES) 
-EXTRA ENDS 
 ;************************************************************************** 
 ; DEFINICION DEL SEGMENTO DE CODIGO 
 CODE SEGMENT 
-ASSUME CS: CODE, DS: DATOS, ES: EXTRA, SS: PILA 
+ASSUME CS: CODE
 ORG 256
 
-INICIO: JMP MAIN
+INICIO: JMP INSTALADOR
 
+infoinput DB "Grupo 2301 Andres y Miguel",13,10,"$"
+instalado DB "Driver instalado",13,10,"$"
+desinstalado DB "Driver desinstalado",13,10,"$"
+	
 RSI PROC FAR
 PUSH BX SI
+CMP AH, 0H
+JZ DET
 CMP AH, 11H
 JZ CO
 CMP AH, 12H
 JZ DE
 JMP FI
 
+DET: MOV AX, 1234H
+JMP FI
 CO: CALL CODIFICAR
 JMP FI
 DE: CALL DESCODIFICAR
@@ -47,17 +41,17 @@ CODIFICAR PROC
 MOV BX, 2
 MOV SI, DX
 BUCLE:
-	CMP DS:[SI][BX], '$' ;mira si es fin de cadena
+	CMP DS:[SI][BX], BYTE PTR '$' ;mira si es fin de cadena
 	jz FIN
-	CMP DS:[SI][BX], 41H ;mira si es menor que A
+	CMP DS:[SI][BX], BYTE PTR 41H ;mira si es menor que A
 	JL PASO
-	CMP DS:[SI][BX], 5AH ;mira si es mayor que Z
+	CMP DS:[SI][BX], BYTE PTR 5AH ;mira si es mayor que Z
 	JG PASO
-	CMP DS:[SI][BX], 56H ;mira si hace loopback
+	CMP DS:[SI][BX], BYTE PTR 56H ;mira si hace loopback
 	JL CODIF
-	SUB DS:[SI][BX], 1AH ;hace loopback
+	SUB DS:[SI][BX], BYTE PTR 1AH ;hace loopback
 CODIF:
-	ADD DS:[SI][BX], 5 ;codifica caesar
+	ADD DS:[SI][BX], BYTE PTR 5 ;codifica caesar
 PASO:
 	INC BX
 	JMP BUCLE ;siguiente caracter
@@ -70,17 +64,17 @@ DESCODIFICAR PROC
 MOV BX, 2
 MOV SI, DX
 DESBUCLE:
-	CMP DS:[SI][BX], '$' ;mira si es fin de cadena
+	CMP DS:[SI][BX], BYTE PTR '$' ;mira si es fin de cadena
 	jz DESFIN
-	CMP DS:[SI][BX], 41H ;mira si es menor que A
+	CMP DS:[SI][BX], BYTE PTR 41H ;mira si es menor que A
 	JL DESPASO
-	CMP DS:[SI][BX], 5AH ;mira si es mayor que Z
+	CMP DS:[SI][BX], BYTE PTR 5AH ;mira si es mayor que Z
 	JG DESPASO
-	CMP DS:[SI][BX], 45H ;mira si hace loopback
+	CMP DS:[SI][BX], BYTE PTR 45H ;mira si hace loopback
 	JG DESCODIF
-	ADD DS:[SI][BX], 1AH ;hace loopback
+	ADD DS:[SI][BX], BYTE PTR 1AH ;hace loopback
 DESCODIF:
-	SUB DS:[SI][BX], 5 ;descodifica caesar
+	SUB DS:[SI][BX], BYTE PTR 5 ;descodifica caesar
 DESPASO:
 	INC BX
 	JMP DESBUCLE ;siguiente caracter
@@ -90,12 +84,12 @@ DESFIN:
 DESCODIFICAR ENDP
 
 ; COMIENZO DEL PROCEDIMIENTO PRINCIPAL 
-MAIN PROC
-	CMP [80H], 3 ;SI ES 0, ENTONCES NO ES 3. SI NO ES NI 0 NI 3 CONSIDERO ERROR
+INSTALADOR PROC
+	CMP DS:[80H], BYTE PTR 3 ;SI ES 0, ENTONCES NO ES 3. SI NO ES NI 0 NI 3 CONSIDERO ERROR
 	JNZ INFO
-	CMP [83H], 'I'
+	CMP DS:[83H], BYTE PTR 'I'
 	JZ INSTALAR
-	CMP [83H], 'D'
+	CMP DS:[83H], BYTE PTR 'D'	
 	JZ DESINSTALAR
 	JMP SALIR
 	
@@ -106,22 +100,65 @@ INSTALAR:
 	MOV BX, CS
 	CLI
 	MOV ES:[60H*4], AX
-	MOV ES:[60H-4+2], BX
+	MOV ES:[60H*4+2], BX
 	STI
+	MOV DX, offset instalado
+	MOV AH, 9h
+	INT 21h	
 	MOV DX, OFFSET INSTALADOR
 	INT 27H
 	
 DESINSTALAR:
-;WHATEVER
-	
+	MOV CX, 0
+	MOV DS, CX
+	MOV ES, DS:[60H*4+2]
+	MOV BX, ES:[2CH]
+	MOV AH, 49H
+	INT 21H
+	MOV ES, BX
+	INT 21H
+	CLI
+	MOV DS:[60H*4], CX
+	MOV DS:[60H*4+2], CX
+	STI
+
+	MOV DX, offset desinstalado
+	MOV CX, CS
+	MOV DS, CX
+	MOV AH, 9h
+	INT 21h	
 	SALIR:
 	MOV AX, 4C00H 
 	INT 21H 
 	
 INFO:
-	;IMprimir informcion y blabla
+	MOV AX, 0
+	MOV ES, AX
+	CMP ES:[60H*4], WORD PTR 0H
+	JZ NOINSTALADO
+	CMP ES:[60H*4+2], WORD PTR 0H
+	JZ NOINSTALADO
+	MOV AH, 0
+	INT 60H
+	CMP AX, 1234H
+	JNZ NOINSTALADO
+HECHO:
+	MOV DX, offset instalado
+	MOV AH, 9h
+	INT 21h	
+	JMP ESCRIBIR_INFO
+NOINSTALADO:
+	MOV DX, offset desinstalado
+	MOV AH, 9h
+	INT 21h	
+ESCRIBIR_INFO:
+	MOV DX, offset infoinput
+	MOV AH, 9h
+	INT 21h	
+	JMP SALIR
 	
-MAIN ENDP
+
+INSTALADOR ENDP
 ; FIN DEL SEGMENTO DE CODIGO 
 CODE ENDS 
 ; FIN DEL PROGRAMA INDICANDO DONDE COMIENZA LA EJECUCION 

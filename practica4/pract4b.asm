@@ -50,7 +50,13 @@ INT 21H
 MOV BL, userinput[1]
 MOV BH, 0
 MOV userinput[BX+2], '$'
-CALL CODIFICAR
+
+MOV AX, offset userinput
+MOV DX, seg userinput
+MOV DS, DX
+MOV DX, AX
+MOV AH, 11h
+INT 60H
 
 MOV AX, offset userinput[2]
 MOV DX, seg userinput
@@ -66,7 +72,12 @@ MOV DX, AX
 MOV AH, 9h
 INT 21h
 
-CALL DESCODIFICAR
+MOV AX, offset userinput
+MOV DX, seg userinput
+MOV DS, DX
+MOV DX, AX
+MOV AH, 12h
+INT 60H
 
 MOV AX, offset userinput[2]
 MOV DX, seg userinput
