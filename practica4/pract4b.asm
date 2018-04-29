@@ -1,5 +1,5 @@
 ;************************************************************************** 
-; SBM 2015. ESTRUCTURA BÁSICA DE UN PROGRAMA EN ENSAMBLADOR 
+; SBM 2018. ESTRUCTURA BÁSICA DE UN PROGRAMA EN ENSAMBLADOR 
 ; Andrés Salas Peña y Miguel García Moya
 ; Pareja 02 Grupo 2301
 ;************************************************************************** 
@@ -108,7 +108,6 @@ CODIF:
 PASO:
 	INC BX
 	JMP BUCLE ;siguiente caracter
-	
 FIN:
 	RET
 CODIFICAR ENDP
@@ -130,7 +129,6 @@ DESCODIF:
 DESPASO:
 	INC BX
 	JMP DESBUCLE ;siguiente caracter
-	
 DESFIN:
 	RET
 DESCODIFICAR ENDP
