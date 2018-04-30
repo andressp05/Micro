@@ -178,7 +178,7 @@ pi_int: ; Interrupción periódica
 SALIR: ; Manda los EOIs
 MOV al, 20H ; EOI no específico
 OUT 20H, al ; manda EOI al PIC maestro
-OUT A0H, al ; manda EOI al PIC esclavo
+OUT 0A0H, al ; manda EOI al PIC esclavo
 POP DS ES BX AX
 IRET
 serv70_int endp
