@@ -7,8 +7,14 @@
 DATOS SEGMENT
 OFFSET_O DW 0 ; Vector original de la INT 70H
 SEGMEN_O DW 0
-TABLA DB "/|\-" ; Tabla de caracteres
-CONT DW 0 ; Índice a la tabla de caracteres
+CONT DB 0 ; Índice a la tabla de caracteres
+DE_CODE DB 2 ;Codificar o decodificar
+MSGINPUT DB "Ayuda de ejecución: ",13,10
+MSGINPUT2 DB "code <CADENA>: Codifica <CADENA> (en mayusculas)",13,10
+MSGINPUT3 DB "decode <CADENA>: Descodifica <CADENA> (en mayusculas)",13,10
+MSGINPU43 DB "fin : Termina la ejecución",13,10,"$"
+USERINPUT DB 80 dup (?)
+SALTOLINEA DB 13,10,'$'
 DATOS ENDS
 ;************************************************************************** 
 ; DEFINICION DEL SEGMENTO DE PILA 
@@ -32,6 +38,9 @@ MOV SS, AX
 MOV SP, 256
 ; Configuración inicial del teclado y RTC
 CALL vaciar_buffer
+;Comprueba que no se haya introducido 'fin'
+CMP DE_CODE, 2H
+JZ TERMINAR
 CALL config_rtc
 CALL start_rtc
 ; Instala el vector de la INT 70H
@@ -47,14 +56,13 @@ MOV SEGMEN_O, AX
 MOV word ptr ES:[70H*4], offset serv70_int
 MOV word ptr ES:[70H*4 + 2], seg serv70_int
 STI
-; El bucle principal espera la pulsación de una tecla
+
+; El bucle principal espera QUE NO QUEDEN CARACTERES
 ; para terminar
 BUCLE:
-MOV AH, 0BH ; Lee el estado del teclado
-INT 21H
-CMP AL, 0
-JE bucle ; No hay tecla -> sigue esperando
-FIN:
+CMP CONT, 0
+JNZ bucle ; Quedan caracteres -> sigue esperando
+
 ; Desactiva la interrupción del RTC
 CALL stop_rtc
 CLI
@@ -66,20 +74,89 @@ MOV word ptr ES:[70H*4], AX
 MOV AX, SEGMEN_O
 MOV word ptr ES:[70H*4 + 2], AX
 STI
-; Vacía buffer del teclado
-CALL vaciar_buffer
 ; Devuelve el control al DOS
+TERMINAR:
 MOV AX, 4C00H
 INT 21H
 rtc endp
 ; Vacía el buffer del teclado
 VACIAR_BUFFER:
-PUSH AX
-MOV AH, 0CH
-MOV AL,0 
+PUSH DS AX DX BX
+;imprimir mensaje pidiendo cadena a codificar
+; impresion para que el usuario sepa que introducir
+MOV AX, offset msginput
+MOV DX, seg msginput
+MOV DS, DX
+MOV DX, AX
+MOV AH, 9h
+INT 21h
+;introducir cadena a codificar
+;interrupcion para esperar tecleo del usuario
+MOV AH,0AH 
+MOV DX,OFFSET userinput 
+MOV userinput[0], 80 ; 80 caracteres maximo
 INT 21H
-POP AX
+MOV BL, userinput[1]
+MOV BH, 0
+CMP BL, 3H
+JL FINAL
+CMP userinput[2], 'f'
+JNZ CODE_CMP
+CMP userinput[3], 'i'
+JNZ CODE_CMP
+CMP userinput[4], 'n'
+JZ FINAL
+CODE_CMP:
+CMP userinput[1], 4h
+JL FINAL
+CMP userinput[2], 'c'
+JNZ DECODE_CMP
+CMP userinput[3], 'o'
+JNZ DECODE_CMP
+CMP userinput[4], 'd'
+JNZ DECODE_CMP
+CMP userinput[5], 'e'
+JZ DO_CODE
+DECODE_CMP:
+CMP userinput[1], 6H
+JL FINAL
+CMP userinput[2], 'd'
+JNZ FINAL
+CMP userinput[3], 'e'
+JNZ FINAL
+CMP userinput[4], 'c'
+JNZ FINAL
+CMP userinput[5], 'o'
+JNZ FINAL
+CMP userinput[6], 'd'
+JNZ FINAL
+CMP userinput[7], 'e'
+JZ DO_DECODE
+
+FINAL:
+MOV AX, offset SALTOLINEA
+MOV DX, seg SALTOLINEA
+MOV DS, DX
+MOV DX, AX
+MOV AH, 9h
+INT 21h
+
+POP BX DX AX DS
 ret
+
+DO_CODE:
+MOV DE_CODE, 0H
+MOV SI, 4+3 ;'code' + ' ' + n max de caracteres + n de caracteres leidos
+SUB BL, 4
+MOV CONT, BL
+JMP FINAL
+
+DO_DECODE:
+MOV DE_CODE, 1H
+MOV SI, 6+3 ;'decode' + ' ' + n max de caracteres + n de caracteres leidos
+SUB BL, 6
+MOV CONT, BL
+JMP FINAL
 ; ............................................
 ; . Funciones relacionadas con el RTC .
 ; ............................................
@@ -163,18 +240,26 @@ AND AL, 01000000b ; PF = bit 6 de registro C
 JNZ pi_int
 JMP salir
 pi_int: ; Interrupción periódica
-;  MOV AX, VIDEO
-;  MOV ES, AX ; ES apunta al buffer de vídeo
-;  MOV BX, CONT ; BX := índice a la tabla de caracteres
-;  INC BX
-;  CMP BX, 4 ; Superado final de tabla de caracteres?
-;  JNE sigue ; NO -> Se imprime el carácter apuntado por BX
-;  MOV BX, 0 ; SI -> BX apunta al primer carácter
-; ; Muestra el carácter en la esquina superior derecha (col 79)
-; sigue: MOV AL, TABLA[BX]
-;  MOV byte ptr ES:[79*2], AL
-;  ; Actualiza variable de índice a tabla de caracteres
-;  MOV word ptr CONT, BX
+MOV DL, userinput[SI]
+CMP DE_CODE, 0H
+JZ INT_CODIFICAR
+JMP INT_DESCODIFICAR
+
+IMPRIMIR:
+MOV AH, 2H
+INT 21H
+DEC CONT
+INC SI ;Pasa al siguiente caracter
+JMP SALIR
+
+INT_CODIFICAR:
+CALL CODIFICAR
+JMP IMPRIMIR
+
+INT_DESCODIFICAR:
+CALL DESCODIFICAR
+JMP IMPRIMIR
+
 SALIR: ; Manda los EOIs
 MOV al, 20H ; EOI no específico
 OUT 20H, al ; manda EOI al PIC maestro
@@ -182,5 +267,34 @@ OUT 0A0H, al ; manda EOI al PIC esclavo
 POP DS ES BX AX
 IRET
 serv70_int endp
+
+CODIFICAR PROC
+	CMP DL, BYTE PTR 41H ;mira si es menor que A
+	JL FIN
+	CMP DL, BYTE PTR 5AH ;mira si es mayor que Z
+	JG FIN
+	CMP DL, BYTE PTR 56H ;mira si hace loopback
+	JL CODIF
+	SUB DL, BYTE PTR 1AH ;hace loopback
+	CODIF:
+		ADD DL, BYTE PTR 5 ;codifica caesar
+		
+	FIN:
+		RET
+CODIFICAR ENDP
+
+DESCODIFICAR PROC
+	CMP DL, BYTE PTR 41H ;mira si es menor que A
+	JL DESFIN
+	CMP DL, BYTE PTR 5AH ;mira si es mayor que Z
+	JG DESFIN
+	CMP DL, BYTE PTR 45H ;mira si hace loopback
+	JG DESCODIF
+	ADD DL, BYTE PTR 1AH ;hace loopback
+	DESCODIF:
+		SUB DL, BYTE PTR 5 ;descodifica caesar		
+	DESFIN:
+		RET
+DESCODIFICAR ENDP
 CODE ends
 end rtc 
