@@ -12,7 +12,7 @@ DE_CODE DB 2 ;Codificar o decodificar
 MSGINPUT DB "Ayuda de ejecución: ",13,10
 MSGINPUT2 DB "code <CADENA>: Codifica <CADENA> (en mayusculas)",13,10
 MSGINPUT3 DB "decode <CADENA>: Descodifica <CADENA> (en mayusculas)",13,10
-MSGINPU43 DB "fin : Termina la ejecución",13,10,"$"
+MSGINPU43 DB "fin : Termina la ejecucion",13,10,"$"
 USERINPUT DB 80 dup (?)
 SALTOLINEA DB 13,10,'$'
 DATOS ENDS
