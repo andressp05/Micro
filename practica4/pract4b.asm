@@ -8,6 +8,8 @@ DATOS SEGMENT
 MSGINPUT DB "Introduzca cadena a (des)codificar: ",13,10,"$"
 USERINPUT DB 80 dup (?)
 SALTOLINEA DB 13,10,'$'
+CODIFICADO DB "Cadena codificada: ",13,10,"$"
+DESCODIFICADO DB "Cadena descodificada: ",13,10,"$"
 DATOS ENDS 
 ;************************************************************************** 
 ; DEFINICION DEL SEGMENTO DE PILA 
@@ -45,11 +47,25 @@ INT 21h
 ;interrupcion para esperar tecleo del usuario
 MOV AH,0AH 
 MOV DX,OFFSET userinput 
-MOV userinput[0], 80 ; 6 caracteres maximo
+MOV userinput[0], 80 ; 80 caracteres maximo
 INT 21H
 MOV BL, userinput[1]
 MOV BH, 0
 MOV userinput[BX+2], '$'
+
+MOV AX, offset SALTOLINEA
+MOV DX, seg SALTOLINEA
+MOV DS, DX
+MOV DX, AX
+MOV AH, 9h
+INT 21h
+
+MOV AX, offset CODIFICADO
+MOV DX, seg CODIFICADO
+MOV DS, DX
+MOV DX, AX
+MOV AH, 9h
+INT 21h
 
 MOV AX, offset userinput
 MOV DX, seg userinput
@@ -67,6 +83,13 @@ INT 21h
 
 MOV AX, offset SALTOLINEA
 MOV DX, seg SALTOLINEA
+MOV DS, DX
+MOV DX, AX
+MOV AH, 9h
+INT 21h
+
+MOV AX, offset DESCODIFICADO
+MOV DX, seg DESCODIFICADO
 MOV DS, DX
 MOV DX, AX
 MOV AH, 9h
@@ -90,48 +113,6 @@ INT 21h
 MOV AX, 4C00H 
 INT 21H 
 INICIO ENDP 
-
-CODIFICAR PROC
-MOV BX, 2
-BUCLE:
-	CMP userinput[BX], '$' ;mira si es fin de cadena
-	jz FIN
-	CMP userinput[BX], 41H ;mira si es menor que A
-	JL PASO
-	CMP userinput[BX], 5AH ;mira si es mayor que Z
-	JG PASO
-	CMP userinput[BX], 56H ;mira si hace loopback
-	JL CODIF
-	SUB userinput[BX], 1AH ;hace loopback
-CODIF:
-	ADD userinput[BX], 5 ;codifica caesar
-PASO:
-	INC BX
-	JMP BUCLE ;siguiente caracter
-FIN:
-	RET
-CODIFICAR ENDP
-
-DESCODIFICAR PROC
-MOV BX, 2
-DESBUCLE:
-	CMP userinput[BX], '$' ;mira si es fin de cadena
-	jz DESFIN
-	CMP userinput[BX], 41H ;mira si es menor que A
-	JL DESPASO
-	CMP userinput[BX], 5AH ;mira si es mayor que Z
-	JG DESPASO
-	CMP userinput[BX], 45H ;mira si hace loopback
-	JG DESCODIF
-	ADD userinput[BX], 1AH ;hace loopback
-DESCODIF:
-	SUB userinput[BX], 5 ;descodifica caesar
-DESPASO:
-	INC BX
-	JMP DESBUCLE ;siguiente caracter
-DESFIN:
-	RET
-DESCODIFICAR ENDP
 
 ; FIN DEL SEGMENTO DE CODIGO 
 CODE ENDS 

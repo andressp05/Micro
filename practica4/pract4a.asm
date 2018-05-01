@@ -19,6 +19,7 @@ ayudainfo DB "Informacion Generica: PRACT4A.COM",13,10
 ejecucion DB "Con driver instalado: PRACT4B.EXE",13,10,"$"
 instalado DB "Driver instalado",13,10,"$"
 desinstalado DB "Driver desinstalado",13,10,"$"
+yadesinstalado DB "Driver ya desinstalado",13,10,"$"
 	
 RSI PROC FAR
 	PUSH BX SI
@@ -114,6 +115,10 @@ INSTALADOR PROC
 	DESINSTALAR:
 		MOV CX, 0
 		MOV DS, CX
+		CMP DS:[60H*4], WORD PTR 0H
+		JZ YA_DESINSTALADO
+		CMP DS:[60H*4+2], WORD PTR 0H
+		JZ YA_DESINSTALADO
 		MOV ES, DS:[60H*4+2]
 		MOV BX, ES:[2CH]
 		MOV AH, 49H
@@ -133,6 +138,13 @@ INSTALADOR PROC
 	SALIR:
 		MOV AX, 4C00H 
 		INT 21H 	
+	YA_DESINSTALADO:
+		MOV DX, offset yadesinstalado
+		MOV CX, CS
+		MOV DS, CX
+		MOV AH, 9h
+		INT 21h	
+		JMP SALIR
 	INFO:
 		MOV AX, 0
 		MOV ES, AX
