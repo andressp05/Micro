@@ -1,1 +1,14 @@
-La criptografia Caesar usada es la siguiente y se consideran los siguientes caracteres
+Se usa codificacion caesar para caracteres de A a Z, cualquier otro caracter se deja como esta (incluido el abecedario en minusculas).
+Ademas el numero de codificacion Caesar usado es, segun el enunciado de la practica, el 5 (pareja 2 + 3)
+
+El apartado a  y b que van totalmente ligados son completamente robustos:
+Se detecta bien si el driver esta ya desintalado o instalado
+Se detecta si se trata de desintalar el driver estando este ya desinstalado (se muestra mensaje "Driver ya desinstalado")
+Se proporciona ayuda siempre que no se introduzcan los parametros adecuados
+Como es logico, si el driver no esta instalado, el programa falla.
+
+Tambien queremos destacar que para comprobar que somos nosotros los que estamos llamando a la interrupcion creada, usamos un valor interno en nuestro programa 1234.
+
+
+Respecto al apartado c, queremos hacer mencion a que nos hemos basado en el ejercicio 2 proporcionado de la parte teorica de la asignatura para la consecucion de nuestro programa.
+Ademas, anyadimos una ayuda de ejecucion y en caso de no teclearse ninguna de las tres opciones adecuadamente (code, decode y fin), el programa finaliza.
