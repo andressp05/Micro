@@ -7,4 +7,4 @@ Funcions with Assembler: printASCII, matrixProduct, conversion from decimal to b
 ## Project 3
 MasterMind Game with Assembler
 ## Project 4
-Clock interruptions and service routines with basic criptography.
+Clock Interruptions and Service Routines with basic cryptography.
